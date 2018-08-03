@@ -1,3 +1,5 @@
 .git
+.terraform
+terraform.tfvars
 mail-forwarder-mydomain-com.zip
 aws-ses-infrastructure-new.yaml

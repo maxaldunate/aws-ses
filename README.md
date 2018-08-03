@@ -34,27 +34,14 @@
   ## Apply to ses & max-pro
 https://www.terraform.io/docs/providers/aws/r/api_gateway_rest_api.html  
 https://www.terraform.io/docs/providers/aws/r/lambda_function.html  
+https://www.terraform.io/docs/providers/aws/d/iam_policy_document.html
 
 https://registry.terraform.io/
 
 
- LambdaRole: 
-  Type: "AWS::IAM::Role"
-  Properties: 
-   AssumeRolePolicyDocument: 
-    Version: '2012-10-17'
-    Statement:
-    - Effect: Allow
-      Action:
-      - logs:CreateLogGroup
-      - logs:CreateLogStream
-      - logs:PutLogEvents
-      Resource: arn:aws:logs:*:*:*
-    - Effect: Allow
-      Action: ses:SendRawEmail
-      Resource: "*"
-    - Effect: Allow
-      Action:
-      - s3:GetObject
-      - s3:PutObject
-      Resource: arn:aws:s3:::S3-BUCKET-NAME/*
+
+
+
+
+
+
