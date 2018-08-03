@@ -2,57 +2,19 @@
 
 var AWS = require('aws-sdk');
 
-console.log("Max Aldunate pro forwarder // @arithmetric // Version 4.2.0");
-
-// Configure the S3 bucket and key prefix for stored raw emails, and the
-// mapping of email addresses to forward from and to.
-//
-// Expected keys/values:
-//
-// - fromEmail: Forwarded emails will come from this verified address
-//
-// - subjectPrefix: Forwarded emails subject will contain this prefix
-//
-// - emailBucket: S3 bucket name where SES stores emails.
-//
-// - emailKeyPrefix: S3 key name prefix where SES stores email. Include the
-//   trailing slash.
-//
-// - forwardMapping: Object where the key is the lowercase email address from
-//   which to forward and the value is an array of email addresses to which to
-//   send the message.
-//
-//   To match all email addresses on a domain, use a key without the name part
-//   of an email address before the "at" symbol (i.e. `@example.com`).
-//
-//   To match a mailbox name on all domains, use a key without the "at" symbol
-//   and domain part of an email address (i.e. `info`).
-// emailKeyPrefix: "emailsPrefix/",
 var defaultConfig = {
   fromEmail: "max@aldunate.pro",
   subjectPrefix: "",
-  emailBucket: "mail-forwarder-aldunate-pro",
+  emailBucket: process.env.bucket_name,
   emailKeyPrefix: "",
   forwardMapping: {
-    "max@alfunate.pro": [
-      "maxaldunate@gmail.com",
-      "maxaldunate@yahoo.es"
-    ],
-    "maximiliano@aldunate.pro": [
+    "max@aldunate.pro": [
       "maxaldunate@gmail.com"
     ]
   }
 };
 
-/**
- * Parses the SES event record provided for the `mail` and `receipients` data.
- *
- * @param {object} data - Data bundle with context, email, etc.
- *
- * @return {object} - Promise resolved with data.
- */
 exports.parseEvent = function(data) {
-  data.log('max parseEvent');
   // Validate characteristics of a SES event record.
   if (!data.event ||
       !data.event.hasOwnProperty('Records') ||
@@ -70,13 +32,6 @@ exports.parseEvent = function(data) {
   return Promise.resolve(data);
 };
 
-/**
- * Transforms the original recipients to the desired forwarded destinations.
- *
- * @param {object} data - Data bundle with context, email, etc.
- *
- * @return {object} - Promise resolved with data.
- */
 exports.transformRecipients = function(data) {
   var newRecipients = [];
   data.originalRecipients = data.recipients;
@@ -121,18 +76,8 @@ exports.transformRecipients = function(data) {
   return Promise.resolve(data);
 };
 
-/**
- * Fetches the message data from S3.
- *
- * @param {object} data - Data bundle with context, email, etc.
- *
- * @return {object} - Promise resolved with data.
- */
 exports.fetchMessage = function(data) {
   // Copying email object to ensure read permission
-  data.log({level: "info", message: "Fetching email at s3://" +
-    data.config.emailBucket + '/' + data.config.emailKeyPrefix +
-    data.email.messageId});
   return new Promise(function(resolve, reject) {
     data.s3.copyObject({
       Bucket: data.config.emailBucket,
@@ -168,16 +113,7 @@ exports.fetchMessage = function(data) {
   });
 };
 
-/**
- * Processes the message data, making updates to recipients and other headers
- * before forwarding message.
- *
- * @param {object} data - Data bundle with context, email, etc.
- *
- * @return {object} - Promise resolved with data.
- */
 exports.processMessage = function(data) {
-  data.log('processMessage');
   var match = data.emailData.match(/^((?:.+\r?\n)*)(\r?\n(?:.*\s+)*)/m);
   var header = match && match[1] ? match[1] : data.emailData;
   var body = match && match[2] ? match[2] : '';
@@ -188,10 +124,6 @@ exports.processMessage = function(data) {
     var from = match && match[1] ? match[1] : '';
     if (from) {
       header = header + 'Reply-To: ' + from;
-      data.log({level: "info", message: "Added Reply-To address of: " + from});
-    } else {
-      data.log({level: "info", message: "Reply-To address not added because " +
-       "From address was not properly extracted."});
     }
   }
 
@@ -245,15 +177,7 @@ exports.processMessage = function(data) {
   return Promise.resolve(data);
 };
 
-/**
- * Send email using the SES sendRawEmail command.
- *
- * @param {object} data - Data bundle with context, email, etc.
- *
- * @return {object} - Promise resolved with data.
- */
 exports.sendMessage = function(data) {
-  console.log('sendMessage');
   var params = {
     Destinations: data.recipients,
     Source: data.originalRecipient,
@@ -261,9 +185,6 @@ exports.sendMessage = function(data) {
       Data: data.emailData
     }
   };
-  data.log({level: "info", message: "sendMessage: Sending email via SES. " +
-    "Original recipients: " + data.originalRecipients.join(", ") +
-    ". Transformed recipients: " + data.recipients.join(", ") + "."});
   return new Promise(function(resolve, reject) {
     data.ses.sendRawEmail(params, function(err, result) {
       if (err) {
@@ -271,23 +192,11 @@ exports.sendMessage = function(data) {
           error: err, stack: err.stack});
         return reject(new Error('Error: Email sending failed.'));
       }
-      data.log({level: "info", message: "sendRawEmail() successful.",
-        result: result});
       resolve(data);
     });
   });
 };
 
-/**
- * Handler function to be invoked by AWS Lambda with an inbound SES email as
- * the event.
- *
- * @param {object} event - Lambda event from inbound email received by AWS SES.
- * @param {object} context - Lambda context object.
- * @param {object} callback - Lambda callback object.
- * @param {object} overrides - Overrides for the default data, including the
- * configuration, SES object, and S3 object.
- */
 exports.handler = function(event, context, callback, overrides) {
   var steps = overrides && overrides.steps ? overrides.steps :
   [

@@ -1,13 +1,7 @@
 variable "access_key" {}
 variable "secret_key" {}
-
-variable "domain_name" {
-  default = "aldunate.pro"
-}
-
-variable "bucket_name" {
-  default = "aldunate-pro-mail-5ab38c6dc9a6905f540f29aa"
-}
+variable "domain_email_name" {}
+variable "bucket_name" {}
 
 variable "tag_project" {
   default = {
@@ -27,6 +21,15 @@ provider "aws" {
 resource "aws_s3_bucket" "bucket" {
   bucket = "${var.bucket_name}"
   acl    = "private"
+
+  lifecycle_rule {
+    id      = "remove"
+    enabled = true
+
+    expiration {
+      days = 1
+    }
+  }
 
   tags = "${var.tag_project}"
 }
@@ -57,11 +60,6 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 POLICY
 }
 
-#resource "aws_iam_role" "test" {
-#  name               = "test-role"
-#  assume_role_policy = "${file("assume-role-policy.json")}"
-#}
-
 resource "aws_iam_role" "iam_for_lambda" {
   name = "iam_for_lambda"
 
@@ -76,7 +74,7 @@ resource "aws_iam_role" "iam_for_lambda" {
       },
       "Effect": "Allow",
       "Sid": ""
-    }
+    }   
   ]
 }
 EOF
@@ -90,8 +88,10 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = ["ses:SendRawEmail"]
+    effect = "Allow"
+
+    #actions   = ["ses:SendRawEmail"]
+    actions   = ["ses:*"]
     resources = ["*"]
   }
 
@@ -108,7 +108,14 @@ resource "aws_iam_role_policy" "lambda_policy" {
   policy = "${data.aws_iam_policy_document.lambda_policy.json}"
 }
 
+resource "null_resource" "zip_lambda" {
+  provisioner "local-exec" {
+    command = "mail-forwarder-by-domain.bat"
+  }
+}
+
 resource "aws_lambda_function" "mail_forwarder_by_domain_function" {
+  depends_on       = ["null_resource.zip_lambda"]
   filename         = "mail-forwarder-by-domain.zip"
   function_name    = "mail-forwarder-by-domain"
   role             = "${aws_iam_role.iam_for_lambda.arn}"
@@ -117,6 +124,32 @@ resource "aws_lambda_function" "mail_forwarder_by_domain_function" {
   runtime          = "nodejs4.3"
   timeout          = "30"
   tags             = "${var.tag_project}"
+
+  environment {
+    variables = {
+      bucket_name = "${var.bucket_name}"
+    }
+  }
+}
+
+resource "aws_ses_receipt_rule" "mail-forwarder-by-domain-rule" {
+  name          = "mail-forwarder-by-domain-rule"
+  rule_set_name = "default-rule-set"
+  recipients    = ["${var.domain_email_name}"]
+  enabled       = true
+  scan_enabled  = true
+
+  s3_action {
+    bucket_name       = "${var.bucket_name}"
+    object_key_prefix = ""
+    position          = "1"
+  }
+
+  lambda_action {
+    function_arn    = "${aws_lambda_function.mail_forwarder_by_domain_function.arn}"
+    invocation_type = "Event"
+    position        = "2"
+  }
 }
 
 output "mail-forwarder-by-domain-function-arn" {
