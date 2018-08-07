@@ -6,12 +6,12 @@
 
 ### AWS Resources Generated
 ![](icos/Storage_AmazonS3.png) 
-S3-Bucket
+**S3-Bucket**  
 * aws_s3_bucket.bucket "bucket_name" w/lifecycle_rule = bucket_expiration_days
 * aws_s3_bucket_policy.bucket_policy = SES put objetcs
 
 ![](icos/Compute_AWSLambda.png) 
-Lambda 
+**Lambda**  
 * aws_lambda_function.mail_forwarder_function
 * aws_cloudwatch_log_group.mail-forwarder
 * null_resource.zip_lambda
@@ -20,7 +20,7 @@ Lambda
 * aws_iam_role_policy.lambda_policy
 
 ![](icos/Messaging_AmazonSES.png) 
-SES Rule
+**SES Rule**  
 * aws_ses_receipt_rule.mail-forwarder-rule
   - s3_action
   - lambda_action
