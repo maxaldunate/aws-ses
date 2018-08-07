@@ -52,6 +52,7 @@ $ terraform apply
    Plan: 8 to add, 0 to change, 0 to destroy.
   ...
 
+$ terraform show
 $ terraform destroy
   ...
   Destroy Resources
