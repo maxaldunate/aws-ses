@@ -2,11 +2,14 @@ variable "access_key" {}
 variable "secret_key" {}
 variable "domain_email_name" {}
 variable "bucket_name" {}
+variable "bucket_expiration_days" {}
+variable "tag_project" {}
+variable "tag_project_module" {}
 
-variable "tag_project" {
-  default = {
-    Project        = "max-pro"
-    Project-Module = "mail-forwarder-aldunate-pro"
+locals {
+  common_tags = {
+    Project        = "${var.tag_project}"
+    Project-Module = "${var.tag_project_module}"
   }
 }
 
@@ -19,19 +22,20 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "${var.bucket_name}"
-  acl    = "private"
+  bucket        = "${var.bucket_name}"
+  acl           = "private"
+  force_destroy = true
 
   lifecycle_rule {
     id      = "remove"
     enabled = true
 
     expiration {
-      days = 1
+      days = "${var.bucket_expiration_days}"
     }
   }
 
-  tags = "${var.tag_project}"
+  tags = "${local.common_tags}"
 }
 
 resource "aws_s3_bucket_policy" "bucket_policy" {
@@ -58,6 +62,13 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
   ]
 }
 POLICY
+}
+
+resource "aws_lambda_permission" "allow_ses" {
+  statement_id  = "AllowExecutionFromSes"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.mail_forwarder_by_domain_function.function_name}"
+  principal     = "ses.amazonaws.com"
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
@@ -88,9 +99,7 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 
   statement {
-    effect = "Allow"
-
-    #actions   = ["ses:SendRawEmail"]
+    effect    = "Allow"
     actions   = ["ses:*"]
     resources = ["*"]
   }
@@ -123,7 +132,7 @@ resource "aws_lambda_function" "mail_forwarder_by_domain_function" {
   source_code_hash = "${base64sha256(file("mail-forwarder-by-domain.zip"))}"
   runtime          = "nodejs4.3"
   timeout          = "30"
-  tags             = "${var.tag_project}"
+  tags             = "${local.common_tags}"
 
   environment {
     variables = {
