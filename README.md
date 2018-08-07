@@ -5,7 +5,7 @@
 > http://www.daniloaz.com/en/use-gmail-with-your-own-domain-for-free-thanks-to-amazon-ses-lambda/  
 
 ### AWS Resources Generated
-* ![][icos/Storage_AmazonS3.png] S3-Bucket
+* ![](icos/Storage_AmazonS3.png) S3-Bucket
   - ![][icos/Storage_AmazonS3_bucket.png] aws_s3_bucket.bucket "bucket_name" w/lifecycle_rule = bucket_expiration_days
   - ![][icos/SecurityIdentityCompliance_AWSIAM.png]aws_s3_bucket_policy.bucket_policy = SES put objetcs
 * ![][icos/Compute_AWSLambda.png] Lambda 
