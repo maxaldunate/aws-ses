@@ -5,17 +5,17 @@
 > http://www.daniloaz.com/en/use-gmail-with-your-own-domain-for-free-thanks-to-amazon-ses-lambda/  
 
 ### AWS Resources Generated
-* S3-Bucket
-  - aws_s3_bucket.bucket "bucket_name" w/lifecycle_rule = bucket_expiration_days
-  - aws_s3_bucket_policy.bucket_policy = SES put objetcs
-* Lambda 
-  - aws_lambda_function.mail_forwarder_function
-  - aws_cloudwatch_log_group.mail-forwarder
+* ![][icos/Storage_AmazonS3.png] S3-Bucket
+  - ![][icos/Storage_AmazonS3_bucket.png] aws_s3_bucket.bucket "bucket_name" w/lifecycle_rule = bucket_expiration_days
+  - ![][icos/SecurityIdentityCompliance_AWSIAM.png]aws_s3_bucket_policy.bucket_policy = SES put objetcs
+* ![][icos/Compute_AWSLambda.png] Lambda 
+  - ![][icos/Compute_AWSLambda_LambdaFunction.png] aws_lambda_function.mail_forwarder_function
+  - ![][icos/ManagementTools_AmazonCloudWatch.png] aws_cloudwatch_log_group.mail-forwarder
   - null_resource.zip_lambda
-  - aws_lambda_permission.allow_ses  
-  - aws_iam_role.iam_for_lambda
-  - aws_iam_role_policy.lambda_policy
-* SES Rule
+  - ![][icos/SecurityIdentityCompliance_AWSIAM.png] aws_lambda_permission.allow_ses  
+  - ![][icos/SecurityIdentityCompliance_AWSIAM.png] aws_iam_role.iam_for_lambda
+  - ![][icos/SecurityIdentityCompliance_AWSIAM.png] aws_iam_role_policy.lambda_policy
+* ![][icos/Messaging_AmazonSES.png] SES Rule
   - aws_ses_receipt_rule.mail-forwarder-rule
     * s3_action
     * lambda_action
