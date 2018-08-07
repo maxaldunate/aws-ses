@@ -9,13 +9,14 @@
   - aws_s3_bucket.bucket "bucket_name" w/lifecycle_rule = bucket_expiration_days
   - aws_s3_bucket_policy.bucket_policy = SES put objetcs
 * Lambda 
-  - aws_lambda_function.mail_forwarder_by_domain_function
+  - aws_lambda_function.mail_forwarder_function
+  - aws_cloudwatch_log_group.mail-forwarder
   - null_resource.zip_lambda
   - aws_lambda_permission.allow_ses  
   - aws_iam_role.iam_for_lambda
   - aws_iam_role_policy.lambda_policy
 * SES Rule
-  - aws_ses_receipt_rule.mail-forwarder-by-domain-rule
+  - aws_ses_receipt_rule.mail-forwarder-rule
     * s3_action
     * lambda_action
 
@@ -38,6 +39,8 @@
 
 * RUN
 ```bash
+$ ./mail-forwarder.bat
+
 $ terraform init
   ...
   Initializing provider plugins...
@@ -49,7 +52,7 @@ $ terraform init
 
 $ terraform apply
   ...
-   Plan: 8 to add, 0 to change, 0 to destroy.
+   Plan: 9 to add, 0 to change, 0 to destroy.
   ...
 
 $ terraform show
@@ -62,14 +65,14 @@ $ terraform destroy
   - destroy
 
   Terraform will perform the following actions:
-  
+  - aws_cloudwatch_log_group.mail-forwarder
   - aws_iam_role.iam_for_lambda
   - aws_iam_role_policy.lambda_policy
-  - aws_lambda_function.mail_forwarder_by_domain_function
+  - aws_lambda_function.mail_forwarder_function
   - aws_lambda_permission.allow_ses
   - aws_s3_bucket.bucket
   - aws_s3_bucket_policy.bucket_policy
-  - aws_ses_receipt_rule.mail-forwarder-by-domain-rule
+  - aws_ses_receipt_rule.mail-forwarder-rule
   - null_resource.zip_lambda  
   ...
 ```

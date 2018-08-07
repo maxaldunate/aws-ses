@@ -67,7 +67,7 @@ POLICY
 resource "aws_lambda_permission" "allow_ses" {
   statement_id  = "AllowExecutionFromSes"
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.mail_forwarder_by_domain_function.function_name}"
+  function_name = "${aws_lambda_function.mail_forwarder_function.function_name}"
   principal     = "ses.amazonaws.com"
 }
 
@@ -123,13 +123,19 @@ resource "null_resource" "zip_lambda" {
   }
 }
 
-resource "aws_lambda_function" "mail_forwarder_by_domain_function" {
+resource "aws_cloudwatch_log_group" "mail-forwarder" {
+  name              = "/aws/lambda/mail-forwarder"
+  retention_in_days = 60
+  tags              = "${local.common_tags}"
+}
+
+resource "aws_lambda_function" "mail_forwarder_function" {
   depends_on       = ["null_resource.zip_lambda"]
-  filename         = "mail-forwarder-by-domain.zip"
-  function_name    = "mail-forwarder-by-domain"
+  filename         = "mail-forwarder.zip"
+  function_name    = "mail-forwarder"
   role             = "${aws_iam_role.iam_for_lambda.arn}"
   handler          = "mail-forwarder-by-domain.handler"
-  source_code_hash = "${base64sha256(file("mail-forwarder-by-domain.zip"))}"
+  source_code_hash = "${base64sha256(file("mail-forwarder.zip"))}"
   runtime          = "nodejs4.3"
   timeout          = "30"
   tags             = "${local.common_tags}"
@@ -141,8 +147,8 @@ resource "aws_lambda_function" "mail_forwarder_by_domain_function" {
   }
 }
 
-resource "aws_ses_receipt_rule" "mail-forwarder-by-domain-rule" {
-  name          = "mail-forwarder-by-domain-rule"
+resource "aws_ses_receipt_rule" "mail-forwarder-rule" {
+  name          = "mail-forwarder-rule"
   rule_set_name = "default-rule-set"
   recipients    = ["${var.domain_email_name}"]
   enabled       = true
@@ -155,14 +161,14 @@ resource "aws_ses_receipt_rule" "mail-forwarder-by-domain-rule" {
   }
 
   lambda_action {
-    function_arn    = "${aws_lambda_function.mail_forwarder_by_domain_function.arn}"
+    function_arn    = "${aws_lambda_function.mail_forwarder_function.arn}"
     invocation_type = "Event"
     position        = "2"
   }
 }
 
-output "mail-forwarder-by-domain-function-arn" {
-  value = "${aws_lambda_function.mail_forwarder_by_domain_function.arn}"
+output "mail-forwarder-function-arn" {
+  value = "${aws_lambda_function.mail_forwarder_function.arn}"
 }
 
 output "bucket-arn" {

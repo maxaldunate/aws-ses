@@ -218,7 +218,6 @@ exports.handler = function(event, context, callback, overrides) {
   };
   Promise.series(steps, data)
     .then(function(data) {
-      data.log({level: "info", message: "Process finished successfully."});
       return data.callback();
     })
     .catch(function(err) {
