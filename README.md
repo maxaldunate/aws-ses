@@ -44,9 +44,9 @@
 
 * RUN
 ```bash
-$ ./mail-forwarder.bat
+$ ./mail-forwarder.bat   # generates .zip file with .js code for lambda function
 
-$ terraform init
+$ terraform init         # download plugins and providers
   ...
   Initializing provider plugins...
   - Checking for available provider plugins on https://releases.hashicorp.com...
