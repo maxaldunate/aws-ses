@@ -27,8 +27,9 @@ resource "aws_s3_bucket" "bucket" {
   force_destroy = true
 
   lifecycle_rule {
-    id      = "remove"
-    enabled = true
+    id                                     = "remove"
+    enabled                                = true
+    abort_incomplete_multipart_upload_days = "${var.bucket_expiration_days}"
 
     expiration {
       days = "${var.bucket_expiration_days}"
