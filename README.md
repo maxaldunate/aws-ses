@@ -84,4 +84,9 @@ $ terraform destroy
 ```
 
 
+### SES sandbox quitting
+
+To remove it from quarantine and allow normal mailing you need to open a support ticket to Amazon and fullfill a request.
+
+
 The End
