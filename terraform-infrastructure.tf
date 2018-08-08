@@ -1,6 +1,7 @@
 variable "access_key" {}
 variable "secret_key" {}
 variable "domain_email_name" {}
+variable "to_email" {}
 variable "bucket_name" {}
 variable "bucket_expiration_days" {}
 variable "tag_project" {}
@@ -120,7 +121,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 resource "null_resource" "zip_lambda" {
   provisioner "local-exec" {
-    command = "mail-forwarder-by-domain.bat"
+    command = "mail-forwarder.bat"
   }
 }
 
@@ -135,7 +136,7 @@ resource "aws_lambda_function" "mail_forwarder_function" {
   filename         = "mail-forwarder.zip"
   function_name    = "mail-forwarder"
   role             = "${aws_iam_role.iam_for_lambda.arn}"
-  handler          = "mail-forwarder-by-domain.handler"
+  handler          = "mail-forwarder.handler"
   source_code_hash = "${base64sha256(file("mail-forwarder.zip"))}"
   runtime          = "nodejs4.3"
   timeout          = "30"
@@ -143,7 +144,9 @@ resource "aws_lambda_function" "mail_forwarder_function" {
 
   environment {
     variables = {
-      bucket_name = "${var.bucket_name}"
+      bucket_name       = "${var.bucket_name}"
+      domain_email_name = "${var.domain_email_name}"
+      to_email          = "${var.to_email}"
     }
   }
 }

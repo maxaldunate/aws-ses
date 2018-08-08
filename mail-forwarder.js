@@ -2,16 +2,16 @@
 
 var AWS = require('aws-sdk');
 
+function setMaps(){
+  defaultConfig.forwardMapping = {};
+  defaultConfig.forwardMapping[process.env.domain_email_name] = [process.env.to_email]
+}
+
 var defaultConfig = {
-  fromEmail: "max@aldunate.pro",
+  fromEmail: process.env.domain_email_name,
   subjectPrefix: "",
   emailBucket: process.env.bucket_name,
-  emailKeyPrefix: "",
-  forwardMapping: {
-    "max@aldunate.pro": [
-      "maxaldunate@gmail.com"
-    ]
-  }
+  emailKeyPrefix: ""
 };
 
 exports.parseEvent = function(data) {
@@ -198,6 +198,7 @@ exports.sendMessage = function(data) {
 };
 
 exports.handler = function(event, context, callback, overrides) {
+  setMaps();
   var steps = overrides && overrides.steps ? overrides.steps :
   [
     exports.parseEvent,

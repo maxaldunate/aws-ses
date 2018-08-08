@@ -35,11 +35,12 @@
 ```bash
   access_key             = "AK................6Q"
   secret_key             = "vR..../yW..............................i"
-  domain_email_name      = "john@example.com"
+  domain_email_name      = "john@aldunate.com"
+  to_email               = "..........@gmail.com"
   bucket_name            = "example-com-mail-30-days"
-  bucket_expiration_days = "30"
-  tag_project            = "max-pro"
-  tag_project_module     = "mail-forwarder-aldunate-pro"
+  bucket_expiration_days = "5"
+  tag_project            = "max-..."
+  tag_project_module     = "mail-forwarder-.........-com"
 ```
 
 * RUN
