@@ -33,6 +33,10 @@
 
 * Generate `terraform.tfvars` file
 ```bash
+  access_key_ses_for_gmail = "AKIAT............Q6P"
+  secret_key_ses_for_gmail = "BM5............/.................+VdeBw85WYk"
+  key_for_route53        = "zVs.................................../m1ZU="
+
   access_key             = "AK................6Q"
   secret_key             = "vR..../yW..............................i"
   domain_email_name      = "john@aldunate.com"
