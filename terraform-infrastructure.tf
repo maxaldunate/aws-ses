@@ -138,7 +138,7 @@ resource "aws_lambda_function" "mail_forwarder_function" {
   role             = "${aws_iam_role.iam_for_lambda.arn}"
   handler          = "mail-forwarder.handler"
   source_code_hash = "${base64sha256(file("mail-forwarder.zip"))}"
-  runtime          = "nodejs4.3"
+  runtime          = "nodejs8.10"
   timeout          = "30"
   tags             = "${local.common_tags}"
 
